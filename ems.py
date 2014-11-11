@@ -26,26 +26,53 @@ import usb.util
 
 VENDOR = 0x4670
 PRODUCT = 0x9394
+ROM_HEADER = 0x134
 
 DEV = usb.core.find(idVendor=VENDOR, idProduct=PRODUCT)
 
-if DEV is None:
-    raise ValueError('Device not found')
+def _init():
+    '''_init - initalize and capture the usb device'''
 
-DEV.set_configuration()
+    if DEV is None:
+        raise ValueError('Device not found')
 
-# get an endpoint instance
-CFG = DEV.get_active_configuration()
-INTF = CFG[(0, 0)]
+    DEV.set_configuration()
 
-EP = usb.util.find_descriptor(
-    INTF,
-    # match the first OUT endpoint
-    custom_match = \
-    lambda e: \
-        usb.util.endpoint_direction(e.bEndpointAddress) == \
-        usb.util.ENDPOINT_OUT)
+    # get an endpoint instance
+    cfg = DEV.get_active_configuration()
+    intf = cfg[(0, 0)]
 
-assert EP is not None
+    ep_ = usb.util.find_descriptor(
+        intf,
+        # match the first OUT endpoint
+        custom_match = \
+        lambda e: \
+            usb.util.endpoint_direction(e.bEndpointAddress) == \
+            usb.util.ENDPOINT_OUT)
 
-print DEV
+    assert ep_ is not None
+
+def _readcart():
+    '''_readcart - read the header of the cart'''
+    print "Reading Cart"
+
+    msg = '\xff\x00\x00\x00\x00\x00\x00\x02\x00'
+
+    _usbbulktransfer(msg)
+
+def _usbbulktransfer(msg):
+    '''_usbbulktransfer - send the given msg to the USB device'''
+    print "Starting transfer"
+
+    DEV.write(0x2, msg, 200)
+    ret = DEV.read(0x81, 512, 400)
+    sret = ''.join([chr(x) for x in ret])
+
+    print "Game: " + sret[ROM_HEADER:0x144]
+
+def main():
+    '''main - master of all'''
+    _init()
+    _readcart()
+
+main()
