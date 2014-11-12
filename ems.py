@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 '''
-    ems - Simple reader for EMS flashcart
+    ems - EMS flashcart utility
 
     Copyright (C) 2014, Tomasz Finc <tomasz@gmail.com>
 
@@ -23,6 +23,16 @@
 
 import usb.core
 import usb.util
+import argparse
+
+PARSER = argparse.ArgumentParser(
+    description='EMS flashcart utility')
+
+PARSER.add_argument('-r', '--header', action="store_true",
+                    help='read header')
+PARSER.add_argument('-o', '--output', help='output filename')
+
+ARGS = PARSER.parse_args()
 
 VENDOR = 0x4670
 PRODUCT = 0x9394
@@ -73,6 +83,7 @@ def _usbbulktransfer(msg):
 def main():
     '''main - master of all'''
     _init()
-    _readcart()
+    if ARGS.header:
+      _readcart()
 
 main()
