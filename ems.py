@@ -30,13 +30,24 @@ PARSER = argparse.ArgumentParser(
 
 PARSER.add_argument('-r', '--header', action="store_true",
                     help='read header')
+PARSER.add_argument('-s', '--sram', action="store_true",
+                    help='read sram')
 PARSER.add_argument('-o', '--output', help='output filename')
 
 ARGS = PARSER.parse_args()
 
+# USB DEFINITIONS
 VENDOR = 0x4670
 PRODUCT = 0x9394
-ROM_HEADER = 0x134
+
+READ_ENDPOINT = 0x81
+WRITE_ENDPOINT = 0x2
+READ_TIMEOUT = 200
+WRITE_TIMEOUT = 400
+
+# ROM DEFINITIONS
+HEADER_LENGTH = 0x200
+ROM_HEADER_START = 0x134
 
 DEV = usb.core.find(idVendor=VENDOR, idProduct=PRODUCT)
 
@@ -74,16 +85,16 @@ def _usbbulktransfer(msg):
     '''_usbbulktransfer - send the given msg to the USB device'''
     print "Starting transfer"
 
-    DEV.write(0x2, msg, 200)
-    ret = DEV.read(0x81, 512, 400)
+    DEV.write(WRITE_ENDPOINT, msg, WRITE_TIMEOUT)
+    ret = DEV.read(READ_ENDPOINT, HEADER_LENGTH, WRITE_TIMEOUT)
     sret = ''.join([chr(x) for x in ret])
 
-    print "Game: " + sret[ROM_HEADER:0x144]
+    print "Game: " + sret[ROM_HEADER_START:0x144]
 
 def main():
     '''main - master of all'''
     _init()
     if ARGS.header:
-      _readcart()
+        _readcart()
 
 main()
