@@ -48,6 +48,12 @@ WRITE_TIMEOUT = 400
 # ROM DEFINITIONS
 HEADER_LENGTH = 0x200
 ROM_HEADER_START = 0x134
+BANKS = [1, 2]
+BANK1_START = '\x00\x00\x00\x00'
+BANK2_START = '\x00\x40\x00\x00'
+
+# EMS COMMANDS
+EMS_READ = '\xff'
 
 DEV = usb.core.find(idVendor=VENDOR, idProduct=PRODUCT)
 
@@ -74,22 +80,23 @@ def _init():
     assert ep_ is not None
 
 def _readcart():
-    '''_readcart - read the header of the cart'''
-    print "Reading Cart"
+    '''_readcart - read the header of bank 1 and 2 the cart'''
+    print "Reading Cart Headers"
 
-    msg = '\xff\x00\x00\x00\x00\x00\x00\x02\x00'
+    for bank in BANKS:
+        addr = BANK1_START if bank == 1 else BANK2_START
+        msg = EMS_READ + addr + '\x00\x00\x02\x00'
+        res = _usbbulktransfer(msg, HEADER_LENGTH)
+        print "Game: " + res[ROM_HEADER_START:0x144]
 
-    _usbbulktransfer(msg)
-
-def _usbbulktransfer(msg):
+def _usbbulktransfer(msg, length):
     '''_usbbulktransfer - send the given msg to the USB device'''
-    print "Starting transfer"
 
     DEV.write(WRITE_ENDPOINT, msg, WRITE_TIMEOUT)
-    ret = DEV.read(READ_ENDPOINT, HEADER_LENGTH, WRITE_TIMEOUT)
+    ret = DEV.read(READ_ENDPOINT, length, WRITE_TIMEOUT)
     sret = ''.join([chr(x) for x in ret])
 
-    print "Game: " + sret[ROM_HEADER_START:0x144]
+    return sret
 
 def main():
     '''main - master of all'''
