@@ -5,7 +5,7 @@ with the GB USB smart card 64M. Currently you can read the header and save the
 ROMS in bank 0 and 1 to disk. 
 
 I wrote it to better understand how the cart worked and may extend it later for
-writting functionality.
+writting functionality. It's experimental at best so use it at your own risk.
 
 Background
 =====
@@ -52,3 +52,16 @@ Available commands include
 * '\x57' - Write ROM
 * '\x6d' - Read SRAM
 * '\x4d' - Write SRAM
+
+Hardware
+====
+* E28F640J3A-120 - INTEL FLASH STORAGE (64M)
+* ICE65L84F L - SiliconBlue FPGA
+* PL-8810 - EagleTech Technology USB controller (or variants mc9508jm8 cld 1m61j ctap0946e)
+* CR 1220 - Removable 3V Lithium Battery
+
+Thanks
+====
+Big thanks to Mike Ryan & co. at https://lacklustre.net/projects/ems-flasher/ for 
+doing all the heavy lifting to reverse engineering this cart
+
