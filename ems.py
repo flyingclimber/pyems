@@ -24,6 +24,7 @@
 import usb.core
 import usb.util
 import argparse
+import io
 
 from EMSCart import EMSCart
 from EMSCart import GameBoyRom
@@ -41,6 +42,8 @@ ARGS = PARSER.parse_args()
 
 ems = EMSCart()
 gb = GameBoyRom()
+
+BLOCK_READ = 4096
 
 DEV = usb.core.find(idVendor=ems.VENDOR, idProduct=ems.PRODUCT)
 
@@ -72,9 +75,17 @@ def _readcart():
 
     for bank in ems.BANKS:
         addr = ems.BANK_START[bank]
-        msg = ems.EMS_READ + addr + ems.EMS_END
+        msg = ems.READ_ROM + addr + ems.END_ROM
         res = _usbbulktransfer(msg, gb.HEADER_LENGTH)
         print "Game: " + res[gb.ROM_HEADER_START:0x144]
+
+def _readsram():
+    '''_readsram - reads the sram of the cart'''
+    print "Reading SRAM"
+    addr = '\x00\x00\x00\x00'
+    msg = ems.READ_SRAM + addr + ems.END_SRAM
+    res = _usbbulktransfer(msg, 4096)
+    return res
 
 def _usbbulktransfer(msg, length):
     '''_usbbulktransfer - send the given msg to the USB device'''
@@ -85,10 +96,19 @@ def _usbbulktransfer(msg, length):
 
     return sret
 
+def _write(data):
+    '''_write - write out data to file'''
+    output = io.FileIO(ARGS.output, 'wb')
+    output.write(data)
+
 def main():
     '''main - master of all'''
     _init()
     if ARGS.header:
         _readcart()
+    elif ARGS.sram:
+        sram = _readsram()
+        if sram:
+          _write(sram)
 
 main()
