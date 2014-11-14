@@ -25,6 +25,9 @@ import usb.core
 import usb.util
 import argparse
 
+from EMSCart import EMSCart
+from EMSCart import GameBoyRom
+
 PARSER = argparse.ArgumentParser(
     description='EMS flashcart utility')
 
@@ -36,26 +39,10 @@ PARSER.add_argument('-o', '--output', help='output filename')
 
 ARGS = PARSER.parse_args()
 
-# USB DEFINITIONS
-VENDOR = 0x4670
-PRODUCT = 0x9394
+ems = EMSCart()
+gb = GameBoyRom()
 
-READ_ENDPOINT = 0x81
-WRITE_ENDPOINT = 0x2
-READ_TIMEOUT = 200
-WRITE_TIMEOUT = 400
-
-# ROM DEFINITIONS
-HEADER_LENGTH = 0x200
-ROM_HEADER_START = 0x134
-BANKS = [1, 2]
-BANK1_START = '\x00\x00\x00\x00'
-BANK2_START = '\x00\x40\x00\x00'
-
-# EMS COMMANDS
-EMS_READ = '\xff'
-
-DEV = usb.core.find(idVendor=VENDOR, idProduct=PRODUCT)
+DEV = usb.core.find(idVendor=ems.VENDOR, idProduct=ems.PRODUCT)
 
 def _init():
     '''_init - initalize and capture the usb device'''
@@ -80,20 +67,20 @@ def _init():
     assert ep_ is not None
 
 def _readcart():
-    '''_readcart - read the header of bank 1 and 2 the cart'''
-    print "Reading Cart Headers"
+    '''_readcart - read bank 1 and 2 headers'''
+    print "Reading EMS Cart Headers"
 
-    for bank in BANKS:
-        addr = BANK1_START if bank == 1 else BANK2_START
-        msg = EMS_READ + addr + '\x00\x00\x02\x00'
-        res = _usbbulktransfer(msg, HEADER_LENGTH)
-        print "Game: " + res[ROM_HEADER_START:0x144]
+    for bank in ems.BANKS:
+        addr = ems.BANK_START[bank]
+        msg = ems.EMS_READ + addr + ems.EMS_END
+        res = _usbbulktransfer(msg, gb.HEADER_LENGTH)
+        print "Game: " + res[gb.ROM_HEADER_START:0x144]
 
 def _usbbulktransfer(msg, length):
     '''_usbbulktransfer - send the given msg to the USB device'''
 
-    DEV.write(WRITE_ENDPOINT, msg, WRITE_TIMEOUT)
-    ret = DEV.read(READ_ENDPOINT, length, WRITE_TIMEOUT)
+    DEV.write(ems.WRITE_ENDPOINT, msg, ems.WRITE_TIMEOUT)
+    ret = DEV.read(ems.READ_ENDPOINT, length, ems.WRITE_TIMEOUT)
     sret = ''.join([chr(x) for x in ret])
 
     return sret
