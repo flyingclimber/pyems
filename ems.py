@@ -47,6 +47,8 @@ BLOCK_READ = 4096
 
 DEV = usb.core.find(idVendor=ems.VENDOR, idProduct=ems.PRODUCT)
 
+
+### UTIL ###
 def _init():
     '''_init - initalize and capture the usb device'''
 
@@ -69,24 +71,6 @@ def _init():
 
     assert ep_ is not None
 
-def _readcart():
-    '''_readcart - read bank 1 and 2 headers'''
-    print "Reading EMS Cart Headers"
-
-    for bank in ems.BANKS:
-        addr = ems.BANK_START[bank]
-        msg = ems.READ_ROM + addr + ems.END_ROM
-        res = _usbbulktransfer(msg, gb.HEADER_LENGTH)
-        print "Game: " + res[gb.ROM_HEADER_START:0x144]
-
-def _readsram():
-    '''_readsram - reads the sram of the cart'''
-    print "Reading SRAM"
-    addr = '\x00\x00\x00\x00'
-    msg = ems.READ_SRAM + addr + ems.END_SRAM
-    res = _usbbulktransfer(msg, 4096)
-    return res
-
 def _usbbulktransfer(msg, length):
     '''_usbbulktransfer - send the given msg to the USB device'''
 
@@ -101,6 +85,31 @@ def _write(data):
     output = io.FileIO(ARGS.output, 'wb')
     output.write(data)
 
+### END OF UTIL ###
+
+### CART ###
+def _readcart():
+    '''_readcart - read bank 1 and 2 headers'''
+    print "Reading EMS Cart Headers"
+
+    for bank in ems.BANKS:
+        addr = ems.BANK_START[bank]
+        msg = ems.READ_ROM + addr + ems.END_ROM
+        res = _usbbulktransfer(msg, gb.HEADER_LENGTH)
+        print "Game: " + res[gb.ROM_HEADER_START:0x144]
+
+def _readsram():
+    '''_readsram - reads the sram of the cart'''
+    print "Reading SRAM"
+
+    addr = '\x00\x00\x00\x00'
+    msg = ems.READ_SRAM + addr + ems.END_SRAM
+    res = _usbbulktransfer(msg, 4096)
+    return res
+
+### END OF CART ###
+
+### MAIN ###
 def main():
     '''main - master of all'''
     _init()
@@ -109,6 +118,8 @@ def main():
     elif ARGS.sram:
         sram = _readsram()
         if sram:
-          _write(sram)
+            _write(sram)
+
+### END OF MAIN ###
 
 main()
