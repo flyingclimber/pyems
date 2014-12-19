@@ -40,10 +40,11 @@ class EMSCart:
     WRITE_ENDPOINT = 0x2
     READ_TIMEOUT = 200
     WRITE_TIMEOUT = 400
-  
+
     # CART
     BANKS = [1, 2]
-    BANK_START = [None, '\x00\x00\x00\x00', '\x00\x40\x00\x00']
+    BANK_START = [None, 0x0, 0x400000]
+    BANK_SIZE = 0x400000
 
     # EMS COMMANDS
     READ_ROM = '\xff'

@@ -24,7 +24,7 @@
 import usb.core
 import usb.util
 import argparse
-import io
+import io, sys
 
 from EMSCart import EMSCart
 from EMSCart import GameBoyRom
@@ -32,11 +32,18 @@ from EMSCart import GameBoyRom
 PARSER = argparse.ArgumentParser(
     description='EMS flashcart utility')
 
-PARSER.add_argument('-r', '--header', action="store_true",
+PARSER.add_argument('-t', '--header', action="store_true",
                     help='read header')
 PARSER.add_argument('-s', '--sram', action="store_true",
                     help='read sram')
-PARSER.add_argument('-o', '--output', help='output filename')
+PARSER.add_argument('-r', '--read', action="store_true",
+                    help='read bank')
+PARSER.add_argument('-b', '--bank', type=int, choices=[1, 2],
+                    default=1)
+PARSER.add_argument('-o', '--output', help='output filename',
+                   default="out.rom")
+PARSER.add_argument('-d', action="store_true",
+                    help='dry run')
 
 ARGS = PARSER.parse_args()
 
@@ -47,13 +54,12 @@ BLOCK_READ = 4096
 
 DEV = usb.core.find(idVendor=ems.VENDOR, idProduct=ems.PRODUCT)
 
-
 ### UTIL ###
 def _init():
     '''_init - initalize and capture the usb device'''
 
     if DEV is None:
-        raise ValueError('Device not found')
+        sys.exit('Aborting: EMS cart not found')
 
     DEV.set_configuration()
 
@@ -64,7 +70,7 @@ def _init():
     ep_ = usb.util.find_descriptor(
         intf,
         # match the first OUT endpoint
-        custom_match = \
+        custom_match= \
         lambda e: \
             usb.util.endpoint_direction(e.bEndpointAddress) == \
             usb.util.ENDPOINT_OUT)
@@ -73,10 +79,12 @@ def _init():
 
 def _usbbulktransfer(msg, length):
     '''_usbbulktransfer - send the given msg to the USB device'''
+    sret = ''
 
-    DEV.write(ems.WRITE_ENDPOINT, msg, ems.WRITE_TIMEOUT)
-    ret = DEV.read(ems.READ_ENDPOINT, length, ems.WRITE_TIMEOUT)
-    sret = ''.join([chr(x) for x in ret])
+    if not ARGS.d:
+        DEV.write(ems.WRITE_ENDPOINT, msg, ems.WRITE_TIMEOUT)
+        ret = DEV.read(ems.READ_ENDPOINT, length, ems.WRITE_TIMEOUT)
+        sret = ''.join([chr(x) for x in ret])
 
     return sret
 
@@ -84,12 +92,11 @@ def _write(data):
     '''_write - write out data to file'''
     output = io.FileIO(ARGS.output, 'wb')
     output.write(data)
-
 ### END OF UTIL ###
 
 ### CART ###
-def _readcart():
-    '''_readcart - read bank 1 and 2 headers'''
+def _readheader():
+    '''_readheader - read bank 1 and 2 headers'''
     print "Reading EMS Cart Headers"
 
     for bank in ems.BANKS:
@@ -99,27 +106,47 @@ def _readcart():
         print "Game: " + res[gb.ROM_HEADER_START:0x144]
 
 def _readsram():
-    '''_readsram - reads the sram of the cart'''
+    '''_readsram - reads cart sram'''
     print "Reading SRAM"
 
     addr = '\x00\x00\x00\x00'
     msg = ems.READ_SRAM + addr + ems.END_SRAM
-    res = _usbbulktransfer(msg, 4096)
+    res = _usbbulktransfer(msg, BLOCK_READ)
     return res
 
+def _readcart(bank):
+    '''_readcart - read one cart bank'''
+    print "Reading bank: %i" %(bank)
+
+    output = io.FileIO(ARGS.output, 'wb')
+    start = ems.BANK_START[bank]
+    offset = 0
+
+    while offset <= ems.BANK_SIZE:
+        print "Reading Address: %i" %(offset + start)
+
+        msg = ems.READ_ROM + "{0:#0{1}x}".format(start + offset, 10) \
+        + '\x00\x00\x10\x00'
+        data = _usbbulktransfer(msg, BLOCK_READ)
+        output.write(data)
+        offset += BLOCK_READ
+
+    output.close()
 ### END OF CART ###
 
 ### MAIN ###
 def main():
     '''main - master of all'''
-    _init()
+    if not ARGS.d:
+        _init()
     if ARGS.header:
-        _readcart()
+        _readheader()
     elif ARGS.sram:
         sram = _readsram()
         if sram:
             _write(sram)
-
+    elif ARGS.read:
+        _readcart(ARGS.bank)
 ### END OF MAIN ###
 
 main()
