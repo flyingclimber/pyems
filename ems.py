@@ -118,8 +118,7 @@ def _readsram():
     '''_readsram - reads cart sram'''
     print "Reading SRAM"
 
-    addr = "00000000"
-    msg = ems.READ_SRAM + addr + ems.END_SRAM
+    msg = ems.READ_SRAM + ems.SRAM_START + ems.END_SRAM
     res = _send(msg, BLOCK_READ)
     return res
 
