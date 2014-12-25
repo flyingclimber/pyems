@@ -112,7 +112,7 @@ def _readheader():
         addr = ems.BANK_START[bank]
         msg = ems.READ_ROM + addr + ems.END_ROM
         res = _send(msg, gb.HEADER_LENGTH)
-        print "Game: " + res[gb.ROM_HEADER_START:0x144]
+        print "Bank: %i %s" %(bank, res[gb.ROM_HEADER_START:0x144])
 
 def _readsram():
     '''_readsram - reads cart sram'''
