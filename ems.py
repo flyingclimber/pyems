@@ -99,7 +99,11 @@ def _format(buffer):
 
 def _send(buffer, length):
     '''_send - send byte string to usb device'''
-    return _usbbulktransfer(_format(buffer), length)
+    if len(buffer) == 18:
+        return _usbbulktransfer(_format(buffer), length)
+    else:
+        print "Error: Incorrect buffer command length %i" %(len(buffer))
+        print "Command: %s" %(buffer)
 
 ### END OF UTIL ###
 
@@ -118,9 +122,17 @@ def _readsram():
     '''_readsram - reads cart sram'''
     print "Reading SRAM"
 
-    msg = ems.READ_SRAM + ems.SRAM_START + ems.END_SRAM
-    res = _send(msg, BLOCK_READ)
-    return res
+    offset = 0
+    output = ''
+
+    while offset < ems.SRAM_SIZE:
+        msg = ems.READ_SRAM + \
+        format((int(ems.SRAM_START, 16) + offset), 'x').zfill(8) \
+            + ems.END_SRAM
+        res = _send(msg, BLOCK_READ)
+        output += res
+        offset += BLOCK_READ
+    return output
 
 def _readcart(bank):
     '''_readcart - read one cart bank'''
@@ -131,9 +143,9 @@ def _readcart(bank):
     offset = 00
 
     while offset <= ems.BANK_SIZE:
-        print "Reading Address: %i" %(offset + int(start,16))
+        print "Reading Address: %i" %(offset + int(start, 16))
 
-        msg = ems.READ_ROM + str((offset + int(start,16))) \
+        msg = ems.READ_ROM + str((offset + int(start, 16))) \
         + '00001000'
         data = _send(msg, BLOCK_READ)
         output.write(data)

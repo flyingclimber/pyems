@@ -46,6 +46,7 @@ class EMSCart:
     BANK_START = [None, '00000000', '00400000']
     SRAM_START = '00000000'
     BANK_SIZE = 0x400000
+    SRAM_SIZE = 0x020000
 
     # EMS COMMANDS
     READ_ROM = 'ff'
