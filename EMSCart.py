@@ -43,14 +43,14 @@ class EMSCart:
 
     # CART
     BANKS = [1, 2]
-    BANK_START = [None, 0x0, 0x400000]
+    BANK_START = [None, '00000000', '00400000']
     BANK_SIZE = 0x400000
 
     # EMS COMMANDS
-    READ_ROM = '\xff'
-    READ_SRAM = '\x6d'
-    END_ROM = '\x00\x00\x02\x00'
-    END_SRAM = '\x00\x00\x10\x00'
+    READ_ROM = 'ff'
+    READ_SRAM = '6d'
+    END_ROM = '00000200'
+    END_SRAM = '00001000'
 
     def __init__(self):
         self.data = []

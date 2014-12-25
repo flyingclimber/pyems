@@ -92,6 +92,15 @@ def _write(data):
     '''_write - write out data to file'''
     output = io.FileIO(ARGS.output, 'wb')
     output.write(data)
+
+def _format(buffer):
+    '''_format - convert hex string to byte string'''
+    return buffer.decode('hex')
+
+def _send(buffer, length):
+    '''_send - send byte string to usb device'''
+    return _usbbulktransfer(_format(buffer), length)
+
 ### END OF UTIL ###
 
 ### CART ###
@@ -102,16 +111,16 @@ def _readheader():
     for bank in ems.BANKS:
         addr = ems.BANK_START[bank]
         msg = ems.READ_ROM + addr + ems.END_ROM
-        res = _usbbulktransfer(msg, gb.HEADER_LENGTH)
+        res = _send(msg, gb.HEADER_LENGTH)
         print "Game: " + res[gb.ROM_HEADER_START:0x144]
 
 def _readsram():
     '''_readsram - reads cart sram'''
     print "Reading SRAM"
 
-    addr = '\x00\x00\x00\x00'
+    addr = "00000000"
     msg = ems.READ_SRAM + addr + ems.END_SRAM
-    res = _usbbulktransfer(msg, BLOCK_READ)
+    res = _send(msg, BLOCK_READ)
     return res
 
 def _readcart(bank):
@@ -120,14 +129,14 @@ def _readcart(bank):
 
     output = io.FileIO(ARGS.output, 'wb')
     start = ems.BANK_START[bank]
-    offset = 0
+    offset = 00
 
     while offset <= ems.BANK_SIZE:
-        print "Reading Address: %i" %(offset + start)
+        print "Reading Address: %i" %(offset + int(start,16))
 
-        msg = ems.READ_ROM + "{0:#0{1}x}".format(start + offset, 10) \
-        + '\x00\x00\x10\x00'
-        data = _usbbulktransfer(msg, BLOCK_READ)
+        msg = ems.READ_ROM + str((offset + int(start,16))) \
+        + '00001000'
+        data = _send(msg, BLOCK_READ)
         output.write(data)
         offset += BLOCK_READ
 
