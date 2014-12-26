@@ -53,6 +53,7 @@ class EMSCart:
     READ_SRAM = '6d'
     END_ROM = '00000200'
     END_SRAM = '00001000'
+    END_ROM_READ = '00001000'
 
     def __init__(self):
         self.data = []
