@@ -119,7 +119,7 @@ def _readheader():
         print "Bank: %i %s" %(bank, res[gb.ROM_HEADER_START:0x144])
 
 def _readsram():
-    '''_readsram - reads cart sram'''
+    '''_readsram - read cart sram'''
     print "Reading SRAM"
 
     offset = 0
@@ -140,12 +140,12 @@ def _readcart(bank):
 
     output = io.FileIO(ARGS.output, 'wb')
     start = ems.BANK_START[bank]
-    offset = 00
+    offset = 0
 
-    while offset <= ems.BANK_SIZE:
+    while offset < ems.BANK_SIZE:
         print "Reading Address: %i" %(offset + int(start, 16))
 
-        msg = ems.READ_ROM + str((offset + int(start, 16))) \
+        msg = ems.READ_ROM + str((offset + int(start, 16))).zfill(8) \
         + '00001000'
         data = _send(msg, BLOCK_READ)
         output.write(data)
