@@ -92,6 +92,7 @@ def _write(data):
     '''_write - write out data to file'''
     output = io.FileIO(ARGS.output, 'wb')
     output.write(data)
+    output.close()
 
 def _format(buffer):
     '''_format - convert hex string to byte string'''
