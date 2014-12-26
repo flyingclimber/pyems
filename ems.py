@@ -128,7 +128,7 @@ def _readsram():
 
     while offset < ems.SRAM_SIZE:
         addr = offset + int(ems.SRAM_START, 16)
-        print "Reading SRAM Address: %i" %(addr)
+        print "Reading SRAM Address: 0x%x" %(addr)
 
         msg = ems.READ_SRAM + format((addr), 'x').zfill(8) + ems.END_SRAM
         res = _send(msg, BLOCK_READ)
@@ -146,7 +146,7 @@ def _readcart(bank):
 
     while offset < ems.BANK_SIZE:
         addr = offset + int(start, 16)
-        print "Reading Address: %i" %(addr)
+        print "Reading Address: 0x%x" %(addr)
 
         msg = ems.READ_ROM + str(addr).zfill(8) + ems.END_ROM_READ
         res = _send(msg, BLOCK_READ)
