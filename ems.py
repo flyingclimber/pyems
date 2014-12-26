@@ -103,8 +103,8 @@ def _send(buffer, length):
     if len(buffer) == 18:
         return _usbbulktransfer(_format(buffer), length)
     else:
-        print "Error: Incorrect buffer command length %i" %(len(buffer))
-        print "Command: %s" %(buffer)
+        print "Error: Incorrect buffer command length %i" % (len(buffer))
+        print "Command: %s" % (buffer)
 
 ### END OF UTIL ###
 
@@ -117,7 +117,7 @@ def _readheader():
         addr = ems.BANK_START[bank]
         msg = ems.READ_ROM + addr + ems.END_ROM
         res = _send(msg, gb.HEADER_LENGTH)
-        print "Bank: %i %s" %(bank, res[gb.ROM_HEADER_START:0x144])
+        print "Bank: %i %s" % (bank, res[gb.ROM_HEADER_START:0x144])
 
 def _readsram():
     '''_readsram - read cart sram'''
@@ -128,7 +128,7 @@ def _readsram():
 
     while offset < ems.SRAM_SIZE:
         addr = offset + int(ems.SRAM_START, 16)
-        print "Reading SRAM Address: 0x%x" %(addr)
+        print "Reading SRAM Address: 0x%x" % (addr)
 
         msg = ems.READ_SRAM + format((addr), 'x').zfill(8) + ems.END_SRAM
         res = _send(msg, BLOCK_READ)
@@ -138,7 +138,7 @@ def _readsram():
 
 def _readcart(bank):
     '''_readcart - read one cart bank'''
-    print "Reading bank: %i" %(bank)
+    print "Reading bank: %i" % (bank)
 
     start = ems.BANK_START[bank]
     offset = 0
@@ -146,7 +146,7 @@ def _readcart(bank):
 
     while offset < ems.BANK_SIZE:
         addr = offset + int(start, 16)
-        print "Reading Address: 0x%x" %(addr)
+        print "Reading Address: 0x%x" % (addr)
 
         msg = ems.READ_ROM + str(addr).zfill(8) + ems.END_ROM_READ
         res = _send(msg, BLOCK_READ)
