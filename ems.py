@@ -138,20 +138,19 @@ def _readcart(bank):
     '''_readcart - read one cart bank'''
     print "Reading bank: %i" %(bank)
 
-    output = io.FileIO(ARGS.output, 'wb')
     start = ems.BANK_START[bank]
     offset = 0
+    output = ''
 
     while offset < ems.BANK_SIZE:
         print "Reading Address: %i" %(offset + int(start, 16))
 
         msg = ems.READ_ROM + str((offset + int(start, 16))).zfill(8) \
         + '00001000'
-        data = _send(msg, BLOCK_READ)
-        output.write(data)
+        res = _send(msg, BLOCK_READ)
+        output += res
         offset += BLOCK_READ
-
-    output.close()
+    return output
 ### END OF CART ###
 
 ### MAIN ###
@@ -166,7 +165,9 @@ def main():
         if sram:
             _write(sram)
     elif ARGS.read:
-        _readcart(ARGS.bank)
+        bank = _readcart(ARGS.bank)
+        if bank:
+            _write(bank)
 ### END OF MAIN ###
 
 main()
