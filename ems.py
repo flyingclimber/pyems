@@ -77,6 +77,23 @@ def _init():
 
     assert ep_ is not None
 
+def _buildcmd(cmd, addr, end, addl=''):
+    '''_buildcmd - contruct an ems command string'''
+    msg = cmd + format((addr), 'x').zfill(8) + end + addl
+    return _format(msg)
+
+def _format(buffer):
+    '''_format - convert hex string to byte string'''
+    return buffer.decode('hex')
+
+def _sendcmd(buffer, length):
+    '''_send - send byte string to usb device'''
+    if len(buffer) == 9:
+        return _usbbulktransfer(buffer, length)
+    else:
+        print "Error: Incorrect buffer command length %i" % (len(buffer))
+        print "Command: %s" % (buffer)
+
 def _usbbulktransfer(msg, length):
     '''_usbbulktransfer - send the given msg to the USB device'''
     sret = ''
@@ -93,19 +110,6 @@ def _write(data):
     output = io.FileIO(ARGS.output, 'wb')
     output.write(data)
     output.close()
-
-def _format(buffer):
-    '''_format - convert hex string to byte string'''
-    return buffer.decode('hex')
-
-def _send(buffer, length):
-    '''_send - send byte string to usb device'''
-    if len(buffer) == 18:
-        return _usbbulktransfer(_format(buffer), length)
-    else:
-        print "Error: Incorrect buffer command length %i" % (len(buffer))
-        print "Command: %s" % (buffer)
-
 ### END OF UTIL ###
 
 ### CART ###
@@ -114,10 +118,12 @@ def _readheader():
     print "Reading EMS Cart Headers"
 
     for bank in ems.BANKS:
-        addr = ems.BANK_START[bank]
-        msg = ems.READ_ROM + addr + ems.END_ROM
-        res = _send(msg, gb.HEADER_LENGTH)
-        print "Bank: %i %s" % (bank, res[gb.ROM_HEADER_START:0x144])
+        addr = int(ems.BANK_START[bank], 16)
+
+        cmd = _buildcmd(ems.READ_ROM, addr, ems.END_ROM)
+        resp = _sendcmd(cmd, gb.HEADER_LENGTH)
+
+        print "Bank: %i %s" % (bank, resp[gb.ROM_HEADER_START:0x144])
 
 def _readsram():
     '''_readsram - read cart sram'''
@@ -130,9 +136,10 @@ def _readsram():
         addr = offset + int(ems.SRAM_START, 16)
         print "Reading SRAM Address: 0x%x" % (addr)
 
-        msg = ems.READ_SRAM + format((addr), 'x').zfill(8) + ems.END_SRAM
-        res = _send(msg, BLOCK_READ)
-        output += res
+        cmd = _buildcmd(ems.READ_SRAM, addr, ems.END_SRAM)
+        resp = _sendcmd(cmd, BLOCK_READ)
+
+        output += resp
         offset += BLOCK_READ
     return output
 
@@ -148,9 +155,10 @@ def _readcart(bank):
         addr = offset + int(start, 16)
         print "Reading Address: 0x%x" % (addr)
 
-        msg = ems.READ_ROM + str(addr).zfill(8) + ems.END_ROM_READ
-        res = _send(msg, BLOCK_READ)
-        output += res
+        cmd = _buildcmd(ems.READ_ROM, addr, ems.END_ROM_READ)
+        resp = _sendcmd(cmd, BLOCK_READ)
+
+        output += resp
         offset += BLOCK_READ
     return output
 ### END OF CART ###
