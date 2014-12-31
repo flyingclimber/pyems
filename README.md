@@ -1,11 +1,12 @@
 pyems
 =====
-ems.py is a utility script that currently allows unidirectional communication
-with the GB USB smart card 64M. Currently you can read the header and save the
-ROMS in bank 0 and 1 to disk. 
+ems.py is a utility script that currently allows bi-directional communication
+with the GB USB smart card 64M. Currently you can read the header, save the
+ROMS in bank 1 and 2 to disk, and write roms to bank 1 and 2 of the cart. 
 
-I wrote it to better understand how the cart worked and may extend it later for
-writting functionality. It's experimental at best so use it at your own risk.
+I wrote it to better understand how the cart worked.
+
+It's experimental at best so use it at your own risk.
 
 Background
 =====
@@ -31,14 +32,16 @@ Communicaton with the cart consists of sending 9 byte messages similar to
 \xff\x00\x00\x00\x00\x00\x00\x02\x00
 </pre>
 
+Plus an additional 32 byte payload if writting data. Total command plus payload should not exceed 41 bytes.
+
 All commands conform the the following format
 
 <pre>
-+---------------------+-----------+------------+
-|        1byte        |   4byte   |    4byte   | 
-+---------------------+-----------+------------+
-|READ/WRITE (ROM/SRAM)|  Address  |    Value   |
-+---------------------+-----------+------------+
++---------------------+-----------+------------+------------+
+|        1byte        |   4byte   |    4byte   |   32byte   |
++---------------------+-----------+------------+------------+
+|READ/WRITE (ROM/SRAM)|  Address  |    Value   |    Value   |
++---------------------+-----------+------------+------------+
 </pre>
 
 Thus the command above breaks down to the following which reads the cartridge header 
@@ -63,5 +66,5 @@ Hardware
 Thanks
 ====
 Big thanks to Mike Ryan & co. at https://lacklustre.net/projects/ems-flasher/ for 
-doing all the heavy lifting to reverse engineering this cart
+doing all the heavy lifting to reverse engineer this cart
 
