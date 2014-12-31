@@ -138,8 +138,8 @@ def _readsram():
     output = ''
 
     while offset < ems.SRAM_SIZE:
-        addr = offset + int(ems.SRAM_START, 16)
-        print "Reading SRAM address: 0x%x" % (addr)
+        addr = offset + ems.SRAM_START
+        print "Reading SRAM Address: 0x%x" % (addr)
 
         cmd = _buildcmd(ems.READ_SRAM, addr, ems.END_SRAM)
         resp = _sendcmd(cmd, BLOCK_READ)
@@ -157,8 +157,8 @@ def _readbank(bank):
     output = ''
 
     while offset < ems.BANK_SIZE:
-        addr = offset + int(start, 16)
-        print "Reading address: 0x%x" % (addr)
+        addr = offset + start
+        print "Reading Address: 0x%x" % (addr)
 
         cmd = _buildcmd(ems.READ_ROM, addr, ems.END_ROM_READ)
         resp = _sendcmd(cmd, BLOCK_READ)
