@@ -51,9 +51,9 @@ class EMSCart:
     # EMS COMMANDS
     READ_ROM = 0xff
     READ_SRAM = 0x6d
-    END_ROM = '00000200'
-    END_SRAM = '00001000'
-    END_ROM_READ = '00001000'
+    END_ROM = 0x200
+    END_SRAM = 0x1000
+    END_ROM_READ = 0x1000
 
     def __init__(self):
         self.data = []
