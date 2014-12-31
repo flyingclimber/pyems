@@ -25,6 +25,7 @@ import usb.core
 import usb.util
 import argparse
 import io, sys
+import time
 
 from EMSCart import EMSCart
 from EMSCart import GameBoyRom
@@ -42,6 +43,8 @@ PARSER.add_argument('-b', '--bank', type=int, choices=[1, 2],
                     default=1)
 PARSER.add_argument('-o', '--output', help='output filename',
                    default="out.rom")
+PARSER.add_argument('-a', '--wsram', help='write file to sram')
+PARSER.add_argument('-k', '--wbank', help='write file to bank')
 PARSER.add_argument('-d', action="store_true",
                     help='dry run')
 
@@ -51,6 +54,7 @@ ems = EMSCart()
 gb = GameBoyRom()
 
 BLOCK_READ = 4096
+BLOCK_WRITE = 32
 
 DEV = usb.core.find(idVendor=ems.VENDOR, idProduct=ems.PRODUCT)
 
@@ -79,8 +83,8 @@ def _init():
 
 def _buildcmd(cmd, addr, end, addl=''):
     '''_buildcmd - contruct an ems command string'''
-    msg = cmd + format((addr), 'x').zfill(8) + end + addl
-    return _format(msg)
+    msg = cmd + format((addr), 'x').zfill(8) + end
+    return _format(msg) + addl
 
 def _format(buffer):
     '''_format - convert hex string to byte string'''
@@ -88,7 +92,7 @@ def _format(buffer):
 
 def _sendcmd(buffer, length):
     '''_send - send byte string to usb device'''
-    if len(buffer) == 9:
+    if len(buffer) >= 9:
         return _usbbulktransfer(buffer, length)
     else:
         print "Error: Incorrect buffer command length %i" % (len(buffer))
@@ -134,7 +138,7 @@ def _readsram():
 
     while offset < ems.SRAM_SIZE:
         addr = offset + int(ems.SRAM_START, 16)
-        print "Reading SRAM Address: 0x%x" % (addr)
+        print "Reading SRAM address: 0x%x" % (addr)
 
         cmd = _buildcmd(ems.READ_SRAM, addr, ems.END_SRAM)
         resp = _sendcmd(cmd, BLOCK_READ)
@@ -143,8 +147,8 @@ def _readsram():
         offset += BLOCK_READ
     return output
 
-def _readcart(bank):
-    '''_readcart - read one cart bank'''
+def _readbank(bank):
+    '''_readbank - read one cart bank'''
     print "Reading bank: %i" % (bank)
 
     start = ems.BANK_START[bank]
@@ -153,7 +157,7 @@ def _readcart(bank):
 
     while offset < ems.BANK_SIZE:
         addr = offset + int(start, 16)
-        print "Reading Address: 0x%x" % (addr)
+        print "Reading address: 0x%x" % (addr)
 
         cmd = _buildcmd(ems.READ_ROM, addr, ems.END_ROM_READ)
         resp = _sendcmd(cmd, BLOCK_READ)
@@ -161,6 +165,46 @@ def _readcart(bank):
         output += resp
         offset += BLOCK_READ
     return output
+
+
+def _savesram(sourcefile):
+    '''_savesram - save to sram from file'''
+    print "Saving %s to SRAM" % (sourcefile)
+
+    savefile = io.FileIO(sourcefile, 'rb')
+    offset = 0
+
+    while offset < ems.SRAM_SIZE:
+        addr = offset + int(ems.SRAM_START, 16)
+        print "Saving to SRAM address: 0x%x" % (addr)
+
+        block = savefile.read(BLOCK_WRITE)
+        cmd = _buildcmd(ems.WRITE_SRAM, addr, ems.END_SRAM_WRITE, block)
+        resp = _sendcmd(cmd, BLOCK_WRITE)
+
+        offset += BLOCK_WRITE
+
+    savefile.close()
+
+def _savebank(sourcefile, bank):
+    '''_savebank - save to bank from file'''
+    print "Saving %s to bank %i" % (sourcefile, bank)
+
+    romfile = io.FileIO(sourcefile, 'rb')
+    offset = 0
+    start = ems.BANK_START[bank]
+
+    while offset < ems.BANK_SIZE:
+        addr = offset + int(start, 16)
+        print "Saving to bank address: 0x%x" % (addr)
+
+        block = romfile.read(BLOCK_WRITE)
+        cmd = _buildcmd(ems.WRITE_ROM, addr, ems.END_ROM_WRITE, block)
+        resp = _sendcmd(cmd, BLOCK_WRITE)
+
+        offset += BLOCK_WRITE
+        time.sleep(1)
+    romfile.close()
 ### END OF CART ###
 
 ### MAIN ###
@@ -175,9 +219,13 @@ def main():
         if sram:
             _write(sram)
     elif ARGS.read:
-        bank = _readcart(ARGS.bank)
+        bank = _readbank(ARGS.bank)
         if bank:
             _write(bank)
+    elif ARGS.wsram:
+        _savesram(ARGS.wsram)
+    elif ARGS.wbank:
+        _savebank(ARGS.wbank, ARGS.bank)
 ### END OF MAIN ###
 
 main()
