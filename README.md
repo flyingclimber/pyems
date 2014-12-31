@@ -1,8 +1,8 @@
 pyems
 =====
-ems.py is a utility script that currently allows unidirectional communication
-with the GB USB smart card 64M. Currently you can read the header and save the
-ROMS in bank 1 and 2 to disk. 
+ems.py is a utility script that currently allows bi-directional communication
+with the GB USB smart card 64M. Currently you can read the header, save the
+ROMS in bank 1 and 2 to disk, and write roms to bank 1 and 2 of the cart. 
 
 I wrote it to better understand how the cart worked.
 
