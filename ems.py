@@ -83,7 +83,8 @@ def _init():
 
 def _buildcmd(cmd, addr, end, addl=''):
     '''_buildcmd - contruct an ems command string'''
-    msg = cmd + format((addr), 'x').zfill(8) + end
+    msg = format(cmd, 'x') + format(addr, 'x').zfill(8) + \
+            format(end, 'x').zfill(8)
     return _format(msg) + addl
 
 def _format(buffer):
@@ -122,7 +123,7 @@ def _readheader():
     print "Reading EMS Cart Headers"
 
     for bank in ems.BANKS:
-        addr = int(ems.BANK_START[bank], 16)
+        addr = ems.BANK_START[bank]
 
         cmd = _buildcmd(ems.READ_ROM, addr, ems.END_ROM)
         resp = _sendcmd(cmd, gb.HEADER_LENGTH)
