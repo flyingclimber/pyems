@@ -118,7 +118,7 @@ def _readheader():
     print "Reading EMS Cart Headers"
 
     for bank in ems.BANKS:
-        addr = int(ems.BANK_START[bank], 16)
+        addr = ems.BANK_START[bank]
 
         cmd = _buildcmd(ems.READ_ROM, addr, ems.END_ROM)
         resp = _sendcmd(cmd, gb.HEADER_LENGTH)
@@ -133,7 +133,7 @@ def _readsram():
     output = ''
 
     while offset < ems.SRAM_SIZE:
-        addr = offset + int(ems.SRAM_START, 16)
+        addr = offset + ems.SRAM_START
         print "Reading SRAM Address: 0x%x" % (addr)
 
         cmd = _buildcmd(ems.READ_SRAM, addr, ems.END_SRAM)
@@ -152,7 +152,7 @@ def _readcart(bank):
     output = ''
 
     while offset < ems.BANK_SIZE:
-        addr = offset + int(start, 16)
+        addr = offset + start
         print "Reading Address: 0x%x" % (addr)
 
         cmd = _buildcmd(ems.READ_ROM, addr, ems.END_ROM_READ)

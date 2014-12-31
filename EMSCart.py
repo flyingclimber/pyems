@@ -43,8 +43,8 @@ class EMSCart:
 
     # CART
     BANKS = [1, 2]
-    BANK_START = [None, '00000000', '00400000']
-    SRAM_START = '00000000'
+    BANK_START = [None, 0x0, 0x400000]
+    SRAM_START = 0x0
     BANK_SIZE = 0x400000
     SRAM_SIZE = 0x020000
 
