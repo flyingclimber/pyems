@@ -79,7 +79,7 @@ def _init():
 
 def _buildcmd(cmd, addr, end, addl=''):
     '''_buildcmd - contruct an ems command string'''
-    msg = cmd + format((addr), 'x').zfill(8) + end + addl
+    msg = format(cmd, 'x') + format(addr, 'x').zfill(8) + end + addl
     return _format(msg)
 
 def _format(buffer):
