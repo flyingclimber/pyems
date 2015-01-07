@@ -46,15 +46,15 @@ All commands conform the the following format
 
 Thus the command above breaks down to the following which reads the cartridge header 
 
-* '\xFF' - Read
-* '\x00\x00\x00\x00' - Cart location 0x0000
+* '0xFF' - Read
+* '0x0' - Cart location 0x0 [4byte padded]
 * 'x00\x00\x02\x00' - ?
 
 Available commands include
-* '\xFF' - Read ROM
-* '\x57' - Write ROM
-* '\x6d' - Read SRAM
-* '\x4d' - Write SRAM
+* '0xFF' - Read ROM
+* '0x57' - Write ROM
+* '0x6d' - Read SRAM
+* '0x4d' - Write SRAM
 
 Hardware
 ====
