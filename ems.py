@@ -227,6 +227,8 @@ def main():
         _savesram(ARGS.wsram)
     elif ARGS.wbank:
         _savebank(ARGS.wbank, ARGS.bank)
+    else:
+        _readheader()
 ### END OF MAIN ###
 
 main()
