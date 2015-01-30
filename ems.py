@@ -70,17 +70,17 @@ def _init():
     ep_ = usb.util.find_descriptor(
         intf,
         # match the first OUT endpoint
-        custom_match= \
-        lambda e: \
-            usb.util.endpoint_direction(e.bEndpointAddress) == \
-            usb.util.ENDPOINT_OUT)
+        custom_match= (
+        lambda e:
+            usb.util.endpoint_direction(e.bEndpointAddress) ==
+            usb.util.ENDPOINT_OUT))
 
     assert ep_ is not None
 
 def _buildcmd(cmd, addr, end, addl=''):
     '''_buildcmd - contruct an ems command string'''
-    msg = format(cmd, 'x') + format(addr, 'x').zfill(8) + \
-            format(end, 'x').zfill(8) + addl
+    msg = (format(cmd, 'x') + format(addr, 'x').zfill(8) +
+            format(end, 'x').zfill(8) + addl)
     return _format(msg)
 
 def _format(buffer):
